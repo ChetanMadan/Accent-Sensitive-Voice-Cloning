@@ -1,0 +1,12 @@
+One-shot Voice Conversion by Separating Speaker and Content
+Representations with Instance Normalization
+
+https://arxiv.org/pdf/1904.05742.pdf
+
+input -> trim silence -> to 24khz -> stft (50ms window, 12.5ms hop length, 2048 window size) -> 512 bin mel spectrograms -> subtract mean and divide standard deviation (in mel spec)
+To convert the mel-scale spectrograms back to waveform -> approximate inverse linear transformation to recover the linearscale spectrograms. And phase is reconstructed by Griffin Lim algorithm with 100 iterations
+
+
+
+Our architecture:
+X -> mfcc -> 
