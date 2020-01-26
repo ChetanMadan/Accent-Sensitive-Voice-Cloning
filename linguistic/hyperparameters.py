@@ -1,5 +1,6 @@
 class HyperParameters:
     speakers = list(set(['p'+str(i) for i in range(225,242)])-set(['p235']))
+    num_speakers = len(speakers)
     dropout = 0.5
     preemphasis = 0.97
     data = "LJSpeech-1.1/"
