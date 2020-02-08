@@ -10,3 +10,5 @@ To convert the mel-scale spectrograms back to waveform -> approximate inverse li
 
 Our architecture:
 X -> mfcc -> 
+
+speaker_features -> those of adaptive voice conversions

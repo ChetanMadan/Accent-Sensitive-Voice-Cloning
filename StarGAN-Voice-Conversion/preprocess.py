@@ -81,10 +81,10 @@ if __name__ == '__main__':
 
 
     sample_rate_default = 16000
-    origin_wavpath_default = "./data/VCTK-Corpus/wav48_silence_trimmed"
-    target_wavpath_default = "./data/VCTK-Corpus/wav16"
-    mc_dir_train_default = './data/mc/train'
-    mc_dir_test_default = './data/mc/test'
+    origin_wavpath_default = "../data/VCTK-Corpus/wav48_silence_trimmed"
+    target_wavpath_default = "../data/VCTK-Corpus/wav16"
+    mc_dir_train_default = '../data/mc/train'
+    mc_dir_test_default = '../data/mc/test'
 
     parser.add_argument("--sample_rate", type = int, default = 16000, help = "Sample rate.")
     parser.add_argument("--origin_wavpath", type = str, default = origin_wavpath_default, help = "The original wav path to resample.")
@@ -103,7 +103,7 @@ if __name__ == '__main__':
     num_workers = argv.num_workers if argv.num_workers is not None else cpu_count()
 
     # The original wav in VCTK is 48K, first we want to resample to 16K
-    resample_to_16k(origin_wavpath, target_wavpath, num_workers=num_workers)
+    #resample_to_16k(origin_wavpath, target_wavpath, num_workers=num_workers)
 
     # WE only use 10 speakers listed below for this experiment.
     speaker_used = ['262', '272', '229', '232', '292', '293', '360', '361', '248', '251']
@@ -118,7 +118,7 @@ if __name__ == '__main__':
     print("number of workers: ", num_workers)
     executor = ProcessPoolExecutor(max_workers=num_workers)
 
-    work_dir = target_wavpath
+    work_dir = origin_wavpath
     # spk_folders = os.listdir(work_dir)
     # print("processing {} speaker folders".format(len(spk_folders)))
     # print(spk_folders)
@@ -126,8 +126,8 @@ if __name__ == '__main__':
     futures = []
     for spk in speaker_used:
         spk_path = os.path.join(work_dir, spk)
-        futures.append(executor.submit(partial(get_spk_world_feats, spk_path, mc_dir_train, mc_dir_test, sample_rate)))
-    result_list = [future.result() for future in tqdm(futures)]
+        print("speakers used: ",spk_path)
+        get_spk_world_feats(spk_path, mc_dir_train, mc_dir_test, sample_rate)
     print(result_list)
     sys.exit(0)
 
