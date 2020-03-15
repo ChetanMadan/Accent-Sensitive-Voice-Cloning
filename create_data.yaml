@@ -1,0 +1,11 @@
+Scottish:
+  speaker_list : "p234,p237,p249,p284"
+---
+Irish:
+  speaker_list : "p245,p283,p295,p298"
+---
+American:
+  speaker_list: "p299,p300,p301"
+---
+Indian:
+  speaker_list: "p248, p251,p376"
