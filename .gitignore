@@ -1,4 +1,6 @@
 speech_id_checkpoint/
 data/
-data_old/
+CMU Arctic/
 test/
+new_checkpoints/
+triplet_loss_logs/
