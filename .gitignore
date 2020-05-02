@@ -4,3 +4,4 @@ CMU Arctic/
 test/
 new_checkpoints/
 triplet_loss_logs/
+__pycache__/
