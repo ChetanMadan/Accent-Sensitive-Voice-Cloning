@@ -5,3 +5,7 @@ test/
 new_checkpoints/
 triplet_loss_logs/
 __pycache__/
+*.h5
+triplet_loss/logs/
+__pycache__/
+.ipynb_checkpoints/
