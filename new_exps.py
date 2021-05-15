@@ -3,16 +3,6 @@
 
 # In[1]:
 
-from __future__ import print_function
-from mpl_toolkits.mplot3d import Axes3D
-import numpy as np
-from sklearn.manifold import TSNE
-import time
-import pandas as pd
-from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 import os
 import glob
@@ -42,20 +32,15 @@ import librosa
 import librosa.display
 import IPython
 import pickle 
+import numpy as np
 import scipy 
-
-
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
-
-
+import tensorflow as tf 
 from sklearn.externals import joblib
 from tensorflow.python.client import device_lib
 from keras.layers import Dense, Dropout, BatchNormalization
 from keras.models import Sequential
 from keras import backend as K
 from keras.optimizers import Adam
-#from tensorflow.saved_model import simple_save
 
 
 # In[3]:
@@ -68,12 +53,13 @@ file_name = "/home/dexter/Desktop/projects/Mini/data/VCTK-Corpus/wav48_silence_t
 # In[4]:
 
 
-config = tf.ConfigProto(allow_soft_placement = True,
+config = tf.compat.v1.ConfigProto(allow_soft_placement = True,
                         device_count = {'CPU' : 6,
                                        'GPU' : 0})
 
 
 # In[5]:
+
 
 session = tf.compat.v1.Session(config=config)
 tf.compat.v1.keras.backend.set_session(session)
@@ -125,7 +111,7 @@ def make_accent_model():
 # In[7]:
 
 
-##Mel spectrograms and MFCCs for Indians 
+## Mel spectrograms and MFCCs for Indians 
 def get_accent_mfccs(path):
     x, _ = librosa.load(path)
     x, mf = mfcc_for_accent(x)
@@ -164,27 +150,27 @@ def run_speaker_encoder(mfccs, embedder_net):
 from keras.utils import plot_model
 
 
-# In[30]:
+# In[13]:
 
 
-plot_model(accent_net, to_file='accent.png')
+#plot_model(accent_net, to_file='accent.png')
 
 
 # In[10]:
 
 
 def get_both_embs(path):
-        #for path in enumerate(train_dataset):
-        _, accent_mfccs = get_accent_mfccs(path)
-        speaker_mfccs = get_spectrogram_tisv(path)
-        #print(accent_mfccs.shape)
-        #print(speaker_mfccs.shape)
-        speaker_mfccs = Variable(torch.from_numpy(speaker_mfccs)).to('cuda')
-        speaker_emb = run_speaker_encoder(speaker_mfccs, embedder_net)
-        #print(speaker_emb.shape)
-        accent_emb = accent_net.predict(accent_mfccs)
-        #print(accent_emb.shape)
-        return speaker_emb.cpu().detach().numpy(), accent_emb
+    #for path in enumerate(train_dataset):
+    _, accent_mfccs = get_accent_mfccs(path)
+    speaker_mfccs = get_spectrogram_tisv(path)
+    #print(accent_mfccs.shape)
+    #print(speaker_mfccs.shape)
+    speaker_mfccs = Variable(torch.from_numpy(speaker_mfccs)).to('cuda')
+    speaker_emb = run_speaker_encoder(speaker_mfccs, embedder_net)
+    #print(speaker_emb.shape)
+    accent_emb = accent_net.predict(accent_mfccs)
+    #print(accent_emb.shape)
+    return speaker_emb.cpu().detach().numpy(), accent_emb
 
 
 # In[ ]:
@@ -193,15 +179,39 @@ def get_both_embs(path):
 
 
 
-# In[14]:
+# In[11]:
+
+
+accent_net.summary()
+
+
+# In[12]:
 
 
 dataset = TripletSpeakerDataset()
 data_loader = torch.utils.data.DataLoader(dataset, drop_last=True)
 
 
+# In[13]:
 
-# In[16]:
+
+#for batch_idx, (anchor_utter_path, positive_utter_path, negative_utter_path, accent_negative_path, speaker_positive_id, speaker_negative_id, speaker_anchor_id, positive_accent, negative_accent) in enumerate(data_loader):
+#    print(anchor_utter_path, positive_utter_path, negative_utter_path, accent_negative_path, speaker_positive_id, speaker_negative_id, speaker_anchor_id, positive_accent, negative_accent)
+
+
+# In[ ]:
+
+
+#speaker_positive_id[0], speaker_negative_id, speaker_anchor_id, positive_accent, negative_accent
+
+
+# In[ ]:
+
+
+#anchor_utter_path, positive_utter_path, negative_utter_path, accent_negative_path
+
+
+# In[14]:
 
 
 class PairwiseDistance(Function):
@@ -210,7 +220,6 @@ class PairwiseDistance(Function):
         self.norm = p
 
     def forward(self, x1, x2):
-        
         #print("above assert: ",x1, x2)
         assert x1.size() == x2.size()
         eps = 1e-4 / x1.size(1)
@@ -236,7 +245,7 @@ class TripletLoss(Function):
         return loss
 
 
-# In[17]:
+# In[15]:
 
 
 class AutoEncoder(nn.Module):
@@ -268,7 +277,7 @@ class AutoEncoder(nn.Module):
         return F.relu(mf_sp), F.relu(mf_acc)
 
 
-# In[18]:
+# In[16]:
 
 
 def train():
@@ -336,30 +345,107 @@ def train():
         print("\nDone, trained model saved at", save_model_path)
 
 
+# In[14]:
+
+
+#train()
+
+
+# In[17]:
+
+
+len(data_loader)
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[18]:
+
+
+ae = AutoEncoder().to('cuda')
+
+
+# In[26]:
+
+
+pytorch_total_params = sum(p.numel() for p in ae.parameters() if p.requires_grad)
+
+
+# In[32]:
+
+
+pytorch_total_params
+
+
+# In[31]:
+
+
+pytorch_total_params = sum(p.numel() for p in embedder_net.parameters() if p.requires_grad)
+
+
+# In[33]:
+
+
+dataset = TripletSpeakerDataset()
+data_loader = torch.utils.data.DataLoader(dataset, drop_last=True)
+
+
+# In[35]:
+
+
+len(dataset)
+
+
+# In[19]:
+
+
+from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
+from sklearn.manifold import TSNE
+import time
+import pandas as pd
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+# In[20]:
+
 
 def preprocess_tsne(model, path):
     tsne = TSNE(verbose=1)
     utters = []
     files = glob.glob(path)
     speakers = []
+    accents = []
     X1=[]
     for i,file in enumerate(files):
-        if i%50 !=0:
+        if i%50!=0:
             continue
         try:
             pre_positive_speaker_embs, pre_positive_accent_embs = get_both_embs(file)
-
         except:
             print('continuing')
             continue
-        print(pre_positive_speaker_embs.shape)
-        
         speaker = file.split('/')[-2]
+        accent = file.split('/')[-3]
         pre_positive_speaker_embs, pre_positive_accent_embs = Variable(torch.from_numpy(pre_positive_speaker_embs)).to('cpu'), Variable(torch.from_numpy(pre_positive_accent_embs)).to('cpu')
-        utt, _ = ae.forward(pre_positive_speaker_embs, pre_positive_speaker_embs)
+        utt, _ = ae.forward(pre_positive_speaker_embs, pre_positive_accent_embs)
         print(i)
         utters.append(utt)
         speakers.append(speaker)
+        accents.append(accent)
         X1.append(get_spectrogram_tisv(file))
     arr = [t.detach().numpy() for t in utters]
     y = np.asarray(speakers)
@@ -379,6 +465,7 @@ def tsne_visualize(X, y):
     np.random.seed(42)
     rndperm = np.random.permutation(df.shape[0])
     
+    
     N = 10000
     pca = PCA(n_components=3)
     pca_result = pca.fit_transform(df[feat_cols].values)
@@ -386,7 +473,11 @@ def tsne_visualize(X, y):
     df['pca-two'] = pca_result[:,1] 
     df['pca-three'] = pca_result[:,2]
     print('Explained variation per principal component: {}'.format(pca.explained_variance_ratio_))
-    plt.figure(figsize=(16,10), dpi = 300)
+    plt.figure(figsize=(16,10))
+    
+    df2 = df.groupby(y).mean().reset_index()
+    rndperm2 = np.random.permutation(df2.shape[0])
+    """
     sns_plot = sns.scatterplot(
         x="pca-one", y="pca-two",
         hue="y",
@@ -395,8 +486,22 @@ def tsne_visualize(X, y):
         legend="full",
         alpha=1.0
     )
-    sns_plot.figure.savefig(str(time.time())+'fig.png')
+    sns_plot.figure.savefig('fig.png')
+    """
+    
+    sns_plot2 = sns.scatterplot(
+        x="pca-one", y="pca-two",
+        hue="index",
+        palette=sns.color_palette("hls", 14),
+        data=df2.loc[rndperm2,:],
+        legend="full",
+        alpha=1.0
+    )
+    sns_plot2.figure.savefig('fig2.png')
     #plt.savefig("out.png")
+    
+    
+    
     df_subset = df.loc[rndperm[:N],:].copy()
     data_subset = df_subset[feat_cols].values
     time_start = time.time()
@@ -416,6 +521,124 @@ def tsne_visualize(X, y):
         legend="brief"
     )
     """
+    return df
+
+
+# In[21]:
+
+
+def preprocess_tsne(model, path):
+    tsne = TSNE(verbose=1)
+    utters = []
+    files = glob.glob(path)
+    speakers = []
+    accents = []
+    X1=[]
+    for i,file in enumerate(files):
+        if i%50!=0:
+            continue
+        try:
+            pre_positive_speaker_embs, pre_positive_accent_embs = get_both_embs(file)
+        except:
+            print('continuing')
+            continue
+        speaker = file.split('/')[-2]
+        accent = file.split('/')[-3]
+        pre_positive_speaker_embs, pre_positive_accent_embs = Variable(torch.from_numpy(pre_positive_speaker_embs)).to('cpu'), Variable(torch.from_numpy(pre_positive_accent_embs)).to('cpu')
+        utt, _ = ae.forward(pre_positive_speaker_embs, pre_positive_accent_embs)
+        print(i)
+        utters.append(utt)
+        speakers.append(speaker)
+        accents.append(accent)
+        X1.append(get_spectrogram_tisv(file))
+    arr = [t.detach().numpy() for t in utters]
+    y = np.asarray(accents)
+    print(speakers)
+    print(np.asarray(arr).shape)
+    X = np.squeeze(np.asarray(arr), 1)
+    return X, y, X1
+
+
+def tsne_visualize(X, y):
+    feat_cols = ['pixel'+str(i) for i in range(X.shape[1])]
+    df = pd.DataFrame(X,columns=feat_cols)
+    df['y'] = y
+    df['label'] = df['y'].apply(lambda i: str(i))
+    print('Size of the dataframe: {}'.format(df.shape))
+    
+    np.random.seed(42)
+    rndperm = np.random.permutation(df.shape[0])
+    
+    
+    N = 10000
+    pca = PCA(n_components=3)
+    pca_result = pca.fit_transform(df[feat_cols].values)
+    df['pca-one'] = pca_result[:,0]
+    df['pca-two'] = pca_result[:,1] 
+    df['pca-three'] = pca_result[:,2]
+    print('Explained variation per principal component: {}'.format(pca.explained_variance_ratio_))
+    plt.figure(figsize=(16,10))
+    
+    df2 = df.groupby(y).mean().reset_index()
+    rndperm2 = np.random.permutation(df2.shape[0])
+    """
+    sns_plot = sns.scatterplot(
+        x="pca-one", y="pca-two",
+        hue="y",
+        palette=sns.color_palette("hls", 14),
+        data=df.loc[rndperm,:],
+        legend="full",
+        alpha=1.0
+    )
+    sns_plot.figure.savefig('fig.png')
+    """
+    
+    sns_plot2 = sns.lineplot(
+        x="pca-one", y="pca-two",
+        #hue="index",
+        #palette=sns.color_palette("hls", 4),
+        data=df2.loc[rndperm2,:],
+        legend="full",
+        alpha=1.0
+    )
+    sns_plot2 = sns.scatterplot(
+        x="pca-one", y="pca-two",
+        hue="index",
+        palette=sns.color_palette("hls", 4),
+        data=df2.loc[rndperm2,:],
+        legend="full",
+        alpha=1.0
+    )
+    sns_plot2.figure.savefig('fig2.png')
+    #plt.savefig("out.png")
+    
+    
+    
+    df_subset = df.loc[rndperm[:N],:].copy()
+    data_subset = df_subset[feat_cols].values
+    time_start = time.time()
+    tsne = TSNE(n_components=2, verbose=1, perplexity=40, n_iter=10000)
+    print(X.shape)
+    tsne_results = tsne.fit_transform(pd.DataFrame(np.asarray(X)))
+    print('t-SNE done! Time elapsed: {} seconds'.format(time.time()-time_start))
+    df_subset['tsne-2d-one'] = tsne_results[:,0]
+    df_subset['tsne-2d-two'] = tsne_results[:,1]
+    plt.figure(figsize=(16,10))
+    """
+    sns.scatterplot(
+        x="tsne-2d-one", y="tsne-2d-two",
+        hue="y",
+        palette=sns.color_palette("hls", 14),
+        data=df_subset,
+        legend="brief"
+    )
+    """
+    return df2
+
+
+# In[ ]:
+
+
 
 
 ae = AutoEncoder().to('cpu')
@@ -423,14 +646,48 @@ ae.load_state_dict(torch.load("./new_checkpoints/ckpt_epoch_5_batch_id_8000.pth"
 X, y ,specs= preprocess_tsne(ae, hp.data.train_path)
 
 
-# In[72]:
+# In[25]:
 
 
-tsne_visualize(np.asarray(specs).reshape(np.asarray(specs).shape[0], -1), y)
-
-tsne_visualize(X, y)
+len(y)
 
 
-pca = PCA(n_components=3)
+# In[26]:
+
+
+df = tsne_visualize(X, y)
+
+
+# In[27]:
+
+
+df
+
+
+# In[36]:
+
+
+lens = []
+for i in range(len(df)-1):
+    dist = (df['pca-one'][i] - df['pca-one'][i+1])**2 + (df['pca-two'][i] - df['pca-two'][i+1])**2
+    lens.append(np.sqrt(dist))
+
+
+accs = ['American', 'Indian', 'Irish', 'Scottish']
+for i in range(len(accs)):
+    for j in range(i+1, len(accs)):
+        rndperm2 = [i,j]
+        print(accs[i], accs[j])
+        plt.figure(figsize=(16,10))
+        sns_plot2 = sns.scatterplot(
+        x="pca-one", y="pca-two",
+        hue="index",
+        palette=sns.color_palette("hls", 2),
+        data=df.loc[rndperm2,:],
+        legend="full",
+        alpha=1.0
+        )
+        dist = (df['pca-one'][i] - df['pca-one'][j])**2 + (df['pca-two'][i] - df['pca-two'][j])**2
+        sns_plot2.figure.savefig('{}{} - {}.png'.format(i, j, dist))
 
 

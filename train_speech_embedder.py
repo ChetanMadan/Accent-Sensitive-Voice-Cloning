@@ -34,6 +34,8 @@ def train(model_path):
     iteration = 0
     for e in range(hp.train.epochs):
         total_loss = 0
+        print(len(train_loader))
+        
         for batch_id, mel_db_batch in enumerate(train_loader):
             mel_db_batch = mel_db_batch.to(device)
 
